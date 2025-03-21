@@ -1,0 +1,16 @@
+
+span{
+    font-size: 30px;
+    font-style: italic;
+    background-color: aqua;
+}
+body{
+    background-color:blue;
+
+}
+.run{
+    background-color: crimson;
+}
+body{
+    background-image: image(HTML\first day1\flower.jpg);
+}

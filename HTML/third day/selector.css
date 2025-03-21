@@ -1,0 +1,31 @@
+/*  using class selector */
+.demo{
+    background-color: brown;
+    font-size: 30px;
+    border: 20px solid black;
+}
+/* using id selector */
+#run{
+    background-color: brown;
+}
+/* using combination slector */
+h1,h2{
+    color: chocolate;
+    font-size: large;
+}
+/* attribute selector */
+input{
+    background-color: rgb(198, 156, 30);
+}
+/* /margin and padding */
+.container{
+    border: 1px solid black;
+    margin-top: 20px;
+    /* margin for top/bottom rigth/left */
+    margin: 10px 10px;
+    text-align: center;
+    background-color: cornflowerblue;
+    /* spaceing in the border */
+    padding: 20px 30px 10px 20px;
+
+}

@@ -1,0 +1,32 @@
+
+/*  to using the background color for the submit butten */
+.studentdata{
+
+    border: 3px solid black;
+    width: 40%;
+    padding: 20px;
+    background-color: rgb(110, 144, 168);
+    margin:auto;
+    
+}
+
+
+
+button{
+    background-color: bisque;
+    size: 20px;
+    width: 100%;
+}
+
+
+button:hover{
+    background-color: rgb(146, 105, 105);
+}
+button:active{
+    background-color: rgb(114, 123, 96);
+
+}
+.outline{
+    outline: 2px solid black;
+
+}
