@@ -1,0 +1,50 @@
+package com.gqt.javabasics.twoClass;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.*;
+public class triplenumberequal {
+
+
+	public static int ministep(int p, int q,int r ) {
+		ArrayList<Integer>list=new ArrayList<>();
+		ArrayList<Integer> arr;
+		arr.add(p);
+		arr.add(q);
+		arr.add(r);
+		Collection.sort(arr);
+
+		if(arr.get(0).equals(arr.get(1)) && arr.get(1).equals(arr.get(2))) {
+			return 0;
+
+
+			int steps=0;
+			while(true) {
+				arr.set(0, arr.get(0)+1);
+				arr.set(1, arr.get(1)+1);
+				arr.set(2, arr.get(2)-1);
+				steps++;
+				Collection.sort(arr);
+
+				if(arr.get(0).equals(arr.get(1)) && arr.get(1).equals(arr.get(2))) {
+					return steps;
+
+					if(arr.get(0).equals(arr.get(1))&& (arr.get(2)+1==arr.get(1))|| 
+					(arr.get(1).equals(arr.get(2))&& arr.get(0)+1==arr.get(1))){
+						return -1;
+					}
+				}
+			}
+
+			public static void main(String[] args) {
+				Scanner sc=new Scanner(System.in);
+				System.out.println("enter the threee number");
+				int p=sc.nextInt();
+				int q=sc.nextInt();
+				int r=sc.nextInt();
+				
+				int result=ministep(p,q,r);
+				System.out.println(result);
+			}
+
+		}

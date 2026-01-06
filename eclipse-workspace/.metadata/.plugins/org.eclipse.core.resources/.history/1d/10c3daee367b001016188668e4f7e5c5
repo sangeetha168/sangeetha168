@@ -1,0 +1,108 @@
+package com.gqt.javabasics.Dsaprogram;
+
+import java.util.Scanner;
+
+public class day43to51 {
+
+	static int countsubset(int[] ar,int sum,int i) {
+		if(sum==0) {
+			return 1;
+		}
+		if(sum<0) {
+			return 0;
+		}
+		if(i==ar.length) {
+			return 0;
+			}
+		return countsubset(ar,sum-ar[i],i+1)+countsubset(ar,sum,i+1);
+	}
+	static boolean islukynumber(int n,int counter) {
+		if(n<counter) {
+			return true;
+		}
+		if(n%counter==0) {
+			return false;
+		}
+		return islukynumber(n-(n/counter),counter+1);
+		
+	}
+	static void towerofhonai(int n,char src,char aux,char dest) {
+		if(n==1) {
+			System.out.println(src+"->"+dest);
+			return;
+		}
+		towerofhonai(n-1,src,dest,aux);
+		towerofhonai(1,src,aux,dest);
+		towerofhonai(n-1,aux,src,dest);
+	}
+	static long powerOfnumber(int x,int y) {
+		if(y==0) {
+			return 1;
+		}
+		if(y%2==0) {
+			long res=powerOfnumber(x,y/2);
+			return res*res;
+		}
+		else {
+			return powerOfnumber(x,y-1)*x;
+		}
+		
+	}
+	static int linearsearch(int[] a,int key) {
+		for(int i=0;i<a.length;i++) {
+		if(a[i]==key) {
+			return i;
+		}
+		}
+		return -1;
+	}
+	static int binarysearch(int[] a,int key) {
+		int l=0;
+		int h=a.length-1;
+		int mid=0;
+		
+		while(l<=h) {
+			mid=(l+h)/2;
+			if(key==a[mid]) {
+				return mid;
+			}
+			else if(key<a[mid]) {
+				h=mid-1;
+			}
+			else {
+				l=mid+1;
+			}
+		}
+		return -1;
+	}
+	static int span(int[] a) {
+		int max=a[0];
+		int min=a[0];
+		int span=min-max;
+		for(int i=0;i<a.length;i++) {
+			if(a[i]>max) {
+				max=a[i];
+			}
+			if(a[i]<min) {
+				min=a[i];
+			}
+		}
+		return span;
+	}
+	public static void main(String[] args) {
+		Scanner sc=new Scanner(System.in);
+		int[] ar= {20,15,10,5};
+		System.out.println(countsubset(ar,25,0));
+		//int n=sc.nextInt();//13
+		//System.out.println(islukynumber(n, 2));
+		towerofhonai(3,'A','B','C');
+		System.out.println(powerOfnumber(5,8));
+		int key=10;
+		//int[] a= {10,35,465,65};
+		int[] a= {2,3,4,5,6,9,10,36,76};
+		System.out.println(linearsearch(a,key));
+		System.out.println(binarysearch(a,key));
+		System.out.println(span(a));
+	}
+
+}

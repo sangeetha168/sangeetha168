@@ -1,0 +1,18 @@
+package com.gqt.javabasics.Dsaprogram;
+
+import java.util.Scanner;
+
+public class day23SwaptheEvenOdd {
+
+	static int swapnumber(int n) {
+		return ((n&0*aaaaaaaa)>>>1)|((n&0*55555555));
+		
+	}
+	public static void main(String[] args) {
+		Scanner sc=new Scanner(System.in);
+		int n=sc.nextInt();
+		
+
+	}
+
+}

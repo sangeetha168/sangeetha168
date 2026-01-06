@@ -1,0 +1,27 @@
+package com.gqt.javabasics.twoClass;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.*;
+public class triplenumberequal {
+
+	
+	public static int ministep(int p, int q,int r ) {
+		ArrayList<Integer>list=new ArrayList<>();
+		ArrayList<Integer> arr;
+		arr.add(p);
+		arr.add(q);
+		arr.add(r);
+		Collection.sort(arr);
+		
+		
+		if(arr.get(0).equals(arr.get(1)) && arr.get(1).equals(arr.get(2))) {
+			return 0;
+			
+		}
+	}
+	public static void main(String[] args) {
+		
+	}
+
+}

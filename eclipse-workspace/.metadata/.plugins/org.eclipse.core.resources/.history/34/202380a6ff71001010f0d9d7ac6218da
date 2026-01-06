@@ -1,0 +1,10 @@
+package com.gqt.javabasics.Dsaprogram;
+
+public class day23SwaptheEvenOdd {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
+	}
+
+}
