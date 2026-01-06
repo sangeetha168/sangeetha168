@@ -1,0 +1,51 @@
+package com.gqt.javabasics.twoClass;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Scanner;
+
+public class triplenumberequal {
+
+    public static int ministep(int p, int q, int r) {
+        ArrayList<Integer> arr = new ArrayList<>();
+        arr.add(p);
+        arr.add(q);
+        arr.add(r);
+        Collections.sort(arr);
+
+        if (arr.get(0).equals(arr.get(1)) && arr.get(1).equals(arr.get(2))) {
+            return 0; // Already equal
+        }
+
+        int count = 0;
+        while (true) {
+            arr.set(0, arr.get(0) + 1);
+            arr.set(1, arr.get(1) + 1);
+            arr.set(2, arr.get(2) - 1);
+            count++;
+
+            Collections.sort(arr);
+
+            if (arr.get(0).equals(arr.get(1)) && arr.get(1).equals(arr.get(2))) {
+                return count; // All numbers equal
+            }
+
+            // If not possible to make them equal (e.g., infinite loop situation)
+            if ((arr.get(0).equals(arr.get(1)) && arr.get(2) == arr.get(1) - 1) ||
+                (arr.get(1).equals(arr.get(2)) && arr.get(0) == arr.get(1) - 1)) {
+                return -1;
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter three numbers:");
+        int p = sc.nextInt();
+        int q = sc.nextInt();
+        int r = sc.nextInt();
+
+        int result = ministep(p, q, r);
+        System.out.println("Minimum steps to make all numbers equal: " + result);
+    }
+}
