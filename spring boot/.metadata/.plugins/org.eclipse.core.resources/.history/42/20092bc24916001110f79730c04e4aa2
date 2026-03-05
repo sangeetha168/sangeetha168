@@ -1,0 +1,10 @@
+package com.springsecuityy.DeMo.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.springsecuityy.DeMo.model.StudentModels;
+
+public interface StudentRepo extends JpaRepository<StudentModels, Long> {
+
+	StudentRepo findByEmail(String email);
+}

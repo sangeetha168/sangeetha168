@@ -1,0 +1,5 @@
+package com.springsecuityy.DeMo.customHandler;
+
+public class CustomSuccessHandler {
+
+}

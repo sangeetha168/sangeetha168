@@ -1,0 +1,38 @@
+package com.example.schoolERP.project.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.List;
+
+
+@Data
+@NoArgsConstructor
+@Entity
+public class Student {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String rollNumber;
+    private String parentName;
+    private String phone;
+
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+//    @ManyToOne
+//    @JoinColumn(name = "classroom_id")
+//    private ClassRoom classRoom;
+//
+//    @OneToMany(mappedBy = "student")
+//    private List<Attendance> attendanceList;
+//
+//    @OneToMany(mappedBy = "student")
+//    private List<Marks> marksList;
+//
+//    @OneToMany(mappedBy = "student")
+//    private List<Payment> payments;
+}

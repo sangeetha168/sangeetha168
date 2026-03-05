@@ -1,0 +1,86 @@
+package com.springsecuityy.DeMo.configuration;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
+
+import com.springsecuityy.DeMo.repository.StudentRepo;
+import com.springsecuityy.DeMo.service.CustomUserDetailsService;
+
+@Configuration
+public class SecurityConfiguration {
+	
+	
+	private StudentRepo studentrepo;
+	
+	
+	public SecurityConfiguration(StudentRepo studentrepo) {
+		super();
+		this.studentrepo = studentrepo;
+	}
+
+
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	public UserDetailsService userDetailsService() {
+		return new CustomUserDetailsService(studentrepo);
+	}
+	
+	//this is the actual authentication validater
+//	@Bean
+//	public DaoAuthenticationProvider daoAuthenticationProvider() {
+//		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+//		provider.setPasswordEncoder(passwordEncoder());
+//		provider.setUserDetailsService(userDetailsService());
+//		return provider;
+//		
+//	}
+	
+	
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+		return http
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/","/about/**","/contact/**","/register/**").permitAll()
+						.anyRequest().authenticated())
+				.formLogin(login -> login
+						.loginPage("/login")
+						.loginProcessingUrl("/login")
+						.defaultSuccessUrl("/std-details?loginSuccess",true)
+						.permitAll()
+						)
+				.logout(logout -> logout
+//						.logoutSuccessUrl("/login?logout") // 
+						.permitAll())
+				.build();
+	}
+
+//	public UserDetailsService userDetaillsService(){
+//		//This inMemory authentication 
+//		UserDetails user1 = User.withUsername("ammu")
+//			.password(passwordEncoder().encode("ammu@28"))
+//			.roles("ADMIN")
+//			.build();
+//		
+//		UserDetails user2 = User.withUsername("sanjay")
+//				.password(passwordEncoder().encode("sanjay@20"))
+//				.roles("USER")
+//				.build();
+//		
+//		return new InMemoryUserDetailsManager(user1, user2); //noargs contructor in Userdetails package which will create and store UserDetails Objects
+//	}
+	
+}

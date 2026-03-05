@@ -1,0 +1,29 @@
+package com.springsecuityy.DeMo.service;
+
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+import com.springsecuityy.DeMo.model.StudentModels;
+import com.springsecuityy.DeMo.repository.StudentRepo;
+
+public class CustomUserDetailsService implements UserDetailsService{
+
+	
+	
+	
+	public CustomUserDetailsService(StudentRepo studentrepo) {
+        this.studentrepo = studentrepo;
+    }
+	
+	
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		StudentModels student = studentrepo.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("Username not found: " + username));
+		return new CustomUserDetails();
+	
+	
+	}
+	
+	
+}

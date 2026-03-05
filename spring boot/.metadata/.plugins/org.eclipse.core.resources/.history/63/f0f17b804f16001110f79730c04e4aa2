@@ -1,0 +1,14 @@
+spring.application.name=DeMo
+#spring.security.user.name= SanjayC
+#spring.security.user.password= Sanjay@28
+
+# Automatically create/update tables
+spring.jpa.hibernate.ddl-auto=update
+
+# Database connection
+spring.datasource.url=jdbc:mysql://localhost:3306/db_authentication
+spring.datasource.username=root
+spring.datasource.password=
+
+# Optional: show SQL queries
+spring.jpa.show-sql=true

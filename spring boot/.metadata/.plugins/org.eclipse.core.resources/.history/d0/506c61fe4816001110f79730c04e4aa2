@@ -1,0 +1,5 @@
+package com.springsecuityy.DeMo.model;
+
+public class StudentDTO {
+
+}
