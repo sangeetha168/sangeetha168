@@ -6,7 +6,5 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class FacultyController {
 
-	@Autowired
-	private FacultyController facultyController;
 	
 }
