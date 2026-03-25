@@ -2,6 +2,7 @@ package com.example.schoolERP.project.service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,35 +20,44 @@ public class AttendanceService {
         this.attendanceRepository = attendanceRepository;
     }
 
-    // ── Faculty: Mark or update attendance for one student on a given date ─────
-    // Uses save-or-update logic: if a record already exists for that
-    // student+date, it updates it instead of throwing a duplicate error.
+    // ─────────────────────────────────────────────
+    // ✅ MARK OR UPDATE ATTENDANCE
+    // ─────────────────────────────────────────────
     @Transactional
     public Attendance markAttendance(Student student, LocalDate date, boolean present) {
-        Attendance existing = attendanceRepository.findByStudentAndDate(student, date);
 
-        if (existing != null) {
-            // Update existing record
-            existing.setPresent(present);
-            return attendanceRepository.save(existing);
+    	Optional<Attendance> existing = attendanceRepository
+    	        .findByStudentAndDate(student, date);
+
+        Attendance attendance;
+
+        if (existing.isPresent()) {
+            // ✅ Update existing record
+            attendance = existing.get();
+            attendance.setPresent(present);
+        } else {
+            // ✅ Create new record
+            attendance = new Attendance();
+            attendance.setStudent(student);
+            attendance.setDate(date);
+            attendance.setPresent(present);
         }
 
-        // Create new record
-        Attendance attendance = new Attendance();
-        attendance.setStudent(student);
-        attendance.setDate(date);
-        attendance.setPresent(present);
         return attendanceRepository.save(attendance);
     }
 
-    // ── Faculty / Student: Get all attendance records for a student ────────────
+    // ─────────────────────────────────────────────
+    // ✅ GET ALL ATTENDANCE FOR STUDENT
+    // ─────────────────────────────────────────────
     public List<Attendance> getAttendanceByStudent(Student student) {
         return attendanceRepository.findByStudent(student);
     }
 
-    // ── Student dashboard: Calculate attendance percentage ────────────────────
-    // Returns a value like 85.5 (meaning 85.5%)
+    // ─────────────────────────────────────────────
+    // ✅ CALCULATE ATTENDANCE %
+    // ─────────────────────────────────────────────
     public double calculateAttendancePercentage(Student student) {
+
         List<Attendance> records = attendanceRepository.findByStudent(student);
 
         if (records.isEmpty()) {
@@ -58,22 +68,30 @@ public class AttendanceService {
                 .filter(Attendance::isPresent)
                 .count();
 
-        return ((double) presentCount / records.size()) * 100;
+        double percentage = ((double) presentCount / records.size()) * 100;
+
+        // ✅ Round to 2 decimal places
+        return Math.round(percentage * 100.0) / 100.0;
     }
 
-    // ── Faculty: Get attendance for a specific student on a specific date ──────
-    public Attendance getAttendanceByStudentAndDate(Student student, LocalDate date) {
+    // ─────────────────────────────────────────────
+    // ✅ GET ATTENDANCE BY DATE
+    // ─────────────────────────────────────────────
+    public Optional<Attendance> getAttendanceByStudentAndDate(Student student, LocalDate date) {
         return attendanceRepository.findByStudentAndDate(student, date);
     }
-
-    // ── Faculty: Count how many days a student was present ────────────────────
+    // ─────────────────────────────────────────────
+    // ✅ COUNT PRESENT DAYS
+    // ─────────────────────────────────────────────
     public long countPresentDays(Student student) {
         return attendanceRepository.findByStudent(student).stream()
                 .filter(Attendance::isPresent)
                 .count();
     }
 
-    // ── Faculty: Count total working days recorded for a student ──────────────
+    // ─────────────────────────────────────────────
+    // ✅ COUNT TOTAL DAYS
+    // ─────────────────────────────────────────────
     public long countTotalDays(Student student) {
         return attendanceRepository.findByStudent(student).size();
     }

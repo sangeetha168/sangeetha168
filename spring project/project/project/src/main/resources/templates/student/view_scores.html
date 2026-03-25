@@ -46,6 +46,8 @@
 
       <!-- Summary Cards -->
       <div class="row g-3 mb-4" th:if="${!#lists.isEmpty(scores)}">
+        
+        <!-- Total Subjects -->
         <div class="col-md-3">
           <div class="card border-0 shadow text-center">
             <div class="card-body">
@@ -54,43 +56,44 @@
             </div>
           </div>
         </div>
+
+        <!-- A Grades -->
         <div class="col-md-3">
           <div class="card border-0 shadow text-center">
             <div class="card-body">
-              <h6 class="text-muted">Highest Grade</h6>
+              <h6 class="text-muted">A Grades</h6>
               <h2 class="fw-bold text-success">
-                <!-- Show count of A+ and A grades -->
-                <span th:text="${scores.stream().filter(s -> s.grade == 'A+' || s.grade == 'A').count()}">0</span>
+                <span th:text="${aGradeCount}">0</span>
                 <small class="fs-6 text-muted"> A grades</small>
               </h2>
             </div>
           </div>
         </div>
+
+        <!-- Failed Subjects -->
         <div class="col-md-3">
           <div class="card border-0 shadow text-center">
             <div class="card-body">
               <h6 class="text-muted">Subjects Failed</h6>
               <h2 class="fw-bold text-danger">
-                <span th:text="${scores.stream().filter(s -> s.grade == 'F').count()}">0</span>
+                <span th:text="${failCount}">0</span>
               </h2>
             </div>
           </div>
         </div>
+
+        <!-- Average Percentage -->
         <div class="col-md-3">
           <div class="card border-0 shadow text-center">
             <div class="card-body">
               <h6 class="text-muted">Overall %</h6>
               <h2 class="fw-bold text-info">
-                <!-- Average percentage across all subjects -->
-                <span th:if="${!#lists.isEmpty(scores)}"
-                      th:text="${#numbers.formatDecimal(
-                        scores.stream().mapToDouble(s -> s.maxMarks > 0 ? (s.marks / s.maxMarks) * 100 : 0).average().orElse(0),
-                        1, 1) + '%'}">
-                </span>
+                <span th:text="${#numbers.formatDecimal(avgPercentage, 1, 1) + '%'}">0%</span>
               </h2>
             </div>
           </div>
         </div>
+
       </div>
 
       <!-- Scores Table -->
@@ -127,12 +130,14 @@
                   </span>
                 </td>
               </tr>
+
               <tr th:if="${#lists.isEmpty(scores)}">
                 <td colspan="6" class="text-center text-muted py-4">
                   <i class="bi bi-inbox fs-3 d-block mb-2"></i>
                   No exam scores recorded yet.
                 </td>
               </tr>
+
             </tbody>
           </table>
         </div>

@@ -1,30 +1,18 @@
 package com.example.schoolERP.project.controller;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.schoolERP.project.model.Course;
-import com.example.schoolERP.project.model.Faculty;
-import com.example.schoolERP.project.model.Student;
-import com.example.schoolERP.project.service.AttendanceService;
-import com.example.schoolERP.project.service.CourseService;
-import com.example.schoolERP.project.service.ExamScoreService;
-import com.example.schoolERP.project.service.FacultyService;
-import com.example.schoolERP.project.service.FeeService;
-import com.example.schoolERP.project.service.StudentService;
-import com.example.schoolERP.project.service.TimetableService;
-import com.example.schoolERP.project.service.CustomUserDetails;
+import com.example.schoolERP.project.model.*;
+import com.example.schoolERP.project.service.*;
 
 @Controller
 @RequestMapping("/faculty")
@@ -54,72 +42,76 @@ public class FacultyController {
         this.timetableService = timetableService;
     }
 
-    // ────────────────────────────────────────────────
+    // ─────────────────────────────
     // DASHBOARD
-    // ────────────────────────────────────────────────
-
+    // ─────────────────────────────
     @GetMapping("/dashboard")
     public String facultyDashboard(@AuthenticationPrincipal CustomUserDetails userDetails,
                                    Model model) {
-        Faculty faculty = facultyService.getFacultyByUser(userDetails.getUser());
-        List<Course> myCourses = courseService.getCoursesByFaculty(faculty);
-        List<com.example.schoolERP.project.model.Timetable> myTimetable =
-                timetableService.getTimetableByFaculty(faculty);
 
-        // --- ADD CLASS DROPDOWN ---
+        if (userDetails == null) return "redirect:/login";
+
+        Faculty faculty = facultyService.getFacultyByUser(userDetails.getUser());
+        if (faculty == null) return "redirect:/login";
+
+        List<Course> myCourses = courseService.getCoursesByFaculty(faculty);
+        List<Timetable> myTimetable = timetableService.getTimetableByFaculty(faculty);
+
         List<Integer> classNumbers = myCourses.stream()
                 .map(Course::getClassNumber)
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
-        model.addAttribute("classNumbers", classNumbers);
-        // --------------------------
 
         model.addAttribute("faculty", faculty);
         model.addAttribute("myCourses", myCourses);
         model.addAttribute("myTimetable", myTimetable);
+        model.addAttribute("classNumbers", classNumbers);
+
         return "faculty/faculty_dashboard";
     }
 
-    // ────────────────────────────────────────────────
-    // STUDENT MANAGEMENT
-    // ────────────────────────────────────────────────
-
+    // ─────────────────────────────
+    // STUDENTS VIEW
+    // ─────────────────────────────
     @GetMapping("/students")
     public String viewStudents(@RequestParam(required = false) Integer classNumber,
                                @AuthenticationPrincipal CustomUserDetails userDetails,
                                Model model) {
+
         Faculty faculty = facultyService.getFacultyByUser(userDetails.getUser());
         List<Course> myCourses = courseService.getCoursesByFaculty(faculty);
 
-        // --- ADD CLASS DROPDOWN ---
         List<Integer> classNumbers = myCourses.stream()
                 .map(Course::getClassNumber)
                 .distinct()
                 .sorted()
-                .collect(Collectors.toList());
-        model.addAttribute("classNumbers", classNumbers);
-        // --------------------------
+                .toList();
 
         List<Student> students;
+
         if (classNumber != null) {
             students = studentService.getStudentsByClass(classNumber);
         } else {
             students = myCourses.stream()
-                                .map(course -> studentService.getStudentsByClass(course.getClassNumber()))
-                                .flatMap(List::stream)
-                                .distinct()
-                                .collect(Collectors.toList());
+                    .map(c -> studentService.getStudentsByClass(c.getClassNumber()))
+                    .flatMap(List::stream)
+                    .distinct()
+                    .toList();
         }
 
-        model.addAttribute("students", students);
         model.addAttribute("faculty", faculty);
+        model.addAttribute("students", students);
         model.addAttribute("myCourses", myCourses);
+        model.addAttribute("classNumbers", classNumbers);
         model.addAttribute("selectedClass", classNumber);
 
         return "faculty/manage_students";
     }
 
+    // ─────────────────────────────
+    // ADD STUDENT (🔥 FIXED)
+    // ─────────────────────────────
     @PostMapping("/students/add")
     public String addStudent(@RequestParam String name,
                              @RequestParam String email,
@@ -128,113 +120,69 @@ public class FacultyController {
                              @RequestParam String section,
                              @RequestParam String rollNumber,
                              RedirectAttributes redirectAttributes) {
+
         try {
-            Student student = studentService.addStudent(name, email, phone, classNumber, section, rollNumber);
+            Student student = studentService.addStudent(
+                    name, email, phone, classNumber, section, rollNumber
+            );
+
             feeService.createFeeRecord(student, 0.0, "2024-25");
+
             redirectAttributes.addFlashAttribute("success", "Student added successfully!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to add student: " + e.getMessage());
         }
+
         return "redirect:/faculty/students";
     }
 
-    @GetMapping("/students/edit/{id}")
-    public String showEditStudent(@PathVariable Long id, Model model) {
-        model.addAttribute("student", studentService.getStudentById(id));
-        return "faculty/edit_student";
-    }
-
-    @PostMapping("/students/update/{id}")
-    public String updateStudent(@PathVariable Long id,
-                                @RequestParam String name,
-                                @RequestParam String phone,
-                                @RequestParam Integer classNumber,
-                                @RequestParam String section,
-                                @RequestParam String rollNumber,
-                                RedirectAttributes redirectAttributes) {
-        try {
-            studentService.updateStudent(id, name, phone, classNumber, section, rollNumber);
-            redirectAttributes.addFlashAttribute("success", "Student updated!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Update failed: " + e.getMessage());
-        }
-        return "redirect:/faculty/students";
-    }
-
-    @GetMapping("/students/delete/{id}")
-    public String deleteStudent(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            studentService.deleteStudent(id);
-            redirectAttributes.addFlashAttribute("success", "Student deleted!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Delete failed: " + e.getMessage());
-        }
-        return "redirect:/faculty/students";
-    }
-
-    // ────────────────────────────────────────────────
-    // ATTENDANCE MANAGEMENT
-    // ────────────────────────────────────────────────
-
+    // ─────────────────────────────
+    // ATTENDANCE
+    // ─────────────────────────────
     @GetMapping("/attendance")
     public String viewAttendance(@RequestParam(required = false) Integer classNumber,
                                  @AuthenticationPrincipal CustomUserDetails userDetails,
                                  Model model) {
+
         Faculty faculty = facultyService.getFacultyByUser(userDetails.getUser());
         List<Course> myCourses = courseService.getCoursesByFaculty(faculty);
 
-        // --- ADD CLASS DROPDOWN ---
         List<Integer> classNumbers = myCourses.stream()
                 .map(Course::getClassNumber)
                 .distinct()
                 .sorted()
-                .collect(Collectors.toList());
-        model.addAttribute("classNumbers", classNumbers);
-        // --------------------------
+                .toList();
 
         model.addAttribute("faculty", faculty);
         model.addAttribute("myCourses", myCourses);
+        model.addAttribute("classNumbers", classNumbers);
         model.addAttribute("today", LocalDate.now());
 
         if (classNumber != null) {
             List<Student> students = studentService.getStudentsByClass(classNumber);
+
+            Map<Long, Double> attendanceMap = students.stream()
+                    .collect(Collectors.toMap(
+                            Student::getId,
+                            attendanceService::calculateAttendancePercentage
+                    ));
+
             model.addAttribute("students", students);
+            model.addAttribute("attendanceMap", attendanceMap);
             model.addAttribute("selectedClass", classNumber);
-            model.addAttribute("attendanceMap",
-                    students.stream()
-                            .collect(Collectors.toMap(
-                                    Student::getId,
-                                    attendanceService::calculateAttendancePercentage
-                            )));
         }
 
         return "faculty/manage_attendance";
     }
 
-    @PostMapping("/attendance/mark")
-    public String markAttendance(@RequestParam Long studentId,
-                                 @RequestParam String date,
-                                 @RequestParam boolean present,
-                                 @RequestParam Integer classNumber,
-                                 RedirectAttributes redirectAttributes) {
-        try {
-            Student student = studentService.getStudentById(studentId);
-            attendanceService.markAttendance(student, LocalDate.parse(date), present);
-            redirectAttributes.addFlashAttribute("success", "Attendance marked!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Failed to mark attendance: " + e.getMessage());
-        }
-        return "redirect:/faculty/attendance?classNumber=" + classNumber;
-    }
-
-    // ────────────────────────────────────────────────
-    // EXAM SCORE MANAGEMENT
-    // ────────────────────────────────────────────────
-
+    // ─────────────────────────────
+    // SCORES
+    // ─────────────────────────────
     @GetMapping("/scores")
     public String viewScores(@RequestParam(required = false) Long courseId,
                              @AuthenticationPrincipal CustomUserDetails userDetails,
                              Model model) {
+
         Faculty faculty = facultyService.getFacultyByUser(userDetails.getUser());
         List<Course> myCourses = courseService.getCoursesByFaculty(faculty);
 
@@ -245,9 +193,16 @@ public class FacultyController {
             Course selectedCourse = courseService.getCourseById(courseId);
             List<Student> students = studentService.getStudentsByClass(selectedCourse.getClassNumber());
 
+            List<ExamScore> scores = examScoreService.getScoresByCourse(selectedCourse);
+
+            Map<Long, ExamScore> scoreMap = new HashMap<>();
+            for (ExamScore s : scores) {
+                scoreMap.put(s.getStudent().getId(), s);
+            }
+
             model.addAttribute("selectedCourse", selectedCourse);
             model.addAttribute("students", students);
-            model.addAttribute("scores", examScoreService.getScoresByCourse(selectedCourse));
+            model.addAttribute("scoreMap", scoreMap);
         }
 
         return "faculty/manage_scores";
@@ -259,87 +214,60 @@ public class FacultyController {
                             @RequestParam Double marks,
                             @RequestParam Double maxMarks,
                             RedirectAttributes redirectAttributes) {
+
         try {
+            if (marks > maxMarks) {
+                throw new RuntimeException("Marks cannot be greater than max marks");
+            }
+
             Student student = studentService.getStudentById(studentId);
             Course course = courseService.getCourseById(courseId);
+
             examScoreService.saveScore(student, course, marks, maxMarks);
+
             redirectAttributes.addFlashAttribute("success", "Score saved!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Failed to save score: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
+
         return "redirect:/faculty/scores?courseId=" + courseId;
     }
 
-    // ────────────────────────────────────────────────
-    // FEE MANAGEMENT (with cleared / not cleared segregation)
-    // ────────────────────────────────────────────────
-
+    // ─────────────────────────────
+    // FEES
+    // ─────────────────────────────
     @GetMapping("/fees")
     public String viewFees(@RequestParam(required = false) Integer classNumber,
                            @AuthenticationPrincipal CustomUserDetails userDetails,
                            Model model) {
+
         Faculty faculty = facultyService.getFacultyByUser(userDetails.getUser());
         List<Course> myCourses = courseService.getCoursesByFaculty(faculty);
 
-        // --- ADD CLASS DROPDOWN ---
         List<Integer> classNumbers = myCourses.stream()
                 .map(Course::getClassNumber)
                 .distinct()
                 .sorted()
-                .collect(Collectors.toList());
-        model.addAttribute("classNumbers", classNumbers);
-        // --------------------------
+                .toList();
 
         model.addAttribute("faculty", faculty);
         model.addAttribute("myCourses", myCourses);
+        model.addAttribute("classNumbers", classNumbers);
 
         if (classNumber != null) {
             List<Student> students = studentService.getStudentsByClass(classNumber);
 
+            Map<Long, Fee> feeMap = students.stream()
+                    .collect(Collectors.toMap(
+                            Student::getId,
+                            feeService::getFeeByStudent
+                    ));
+
             model.addAttribute("students", students);
-            model.addAttribute("selectedClass", classNumber);
-
-            // Map of studentId -> Fee
-            var feeMap = students.stream()
-                                 .collect(Collectors.toMap(
-                                         Student::getId,
-                                         feeService::getFeeByStudent
-                                 ));
-
-            // Segregate cleared and not cleared
-            var cleared = feeMap.entrySet().stream()
-                    .filter(e -> {
-                        var fee = e.getValue();
-                        return fee != null && fee.getPaidAmount() >= fee.getTotalAmount();
-                    })
-                    .collect(Collectors.toList());
-
-            var notCleared = feeMap.entrySet().stream()
-                    .filter(e -> {
-                        var fee = e.getValue();
-                        return fee != null && fee.getPaidAmount() < fee.getTotalAmount();
-                    })
-                    .collect(Collectors.toList());
-
             model.addAttribute("feeMap", feeMap);
-            model.addAttribute("clearedFees", cleared);
-            model.addAttribute("pendingFees", notCleared);
+            model.addAttribute("selectedClass", classNumber);
         }
 
         return "faculty/manage_fees";
-    }
-
-    @PostMapping("/fees/update/{studentId}")
-    public String updateFee(@PathVariable Long studentId,
-                            @RequestParam Double amountPaid,
-                            @RequestParam Integer classNumber,
-                            RedirectAttributes redirectAttributes) {
-        try {
-            feeService.recordPayment(studentId, amountPaid);
-            redirectAttributes.addFlashAttribute("success", "Payment recorded!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Failed to update fee: " + e.getMessage());
-        }
-        return "redirect:/faculty/fees?classNumber=" + classNumber;
     }
 }

@@ -17,7 +17,7 @@ public class CustomUserDetails implements UserDetails {
         this.user = user;
     }
 
-    // used in controllers
+    // ✅ Keep this (we will use this in controller)
     public User getUser() {
         return user;
     }
